@@ -23,30 +23,35 @@ with open(ts_file, 'r') as file:
             # Add the timestamp and line to the dictionary
             timestamps_dict[line_without_ts] = timestamp
 
+print("--- Timestamps ---")
 for k, v in timestamps_dict.items():
     print(k, v)
-
-print("--- Timestamps ---")
 
 # Create a folder for the generated clips
 if not os.path.exists("Generated Clips"):
     os.makedirs("Generated Clips")
 
+# Navigate to directory to export. Could also add the path to
+# the export command, not sure what is cleaner
 os.chdir("Generated Clips")
 
 # Create a file with the exported timestamps
 with open('ExportedTimestampsFromScript.txt', 'w') as f:
-    f.write('\n'.join(timestamps_dict))
+    for key, value in timestamps_dict.items():
+        f.write(f'{key}: {value}\n')
 
 # Prompt user for media file
 media_file = input("Enter path to media file: ")
 print("Media file grabbed: ", media_file)
 
+extension = media_file[-3:]
+print("Extension of file: ", extension)
+
 # Create clips using the timestamps
 for i, timestamp_key in enumerate(timestamps_dict.keys()):
     start_time = timestamps_dict[timestamp_key]
     end_time = timestamps_dict[list(timestamps_dict.keys())[i+1]] if i < len(timestamps_dict)-1 else None
-    clip_name = f"{timestamp_key}.mp4"  # Change to .mp3 if necessary
+    clip_name = f"{timestamp_key}.{extension}"
     clip_path = os.path.join("Generated Clips", clip_name)
     cmd = f"ffmpeg -i {media_file} -ss {start_time}{' -to '+end_time if end_time else ''} -c copy {clip_name}"
     os.system(cmd)
